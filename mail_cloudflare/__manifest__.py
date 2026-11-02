@@ -6,7 +6,7 @@
     "version": "18.0.1.2.0",
     "category": "Discuss",
     "author": "Avunu LLC",
-    "website": "https://avu.nu",
+    "website": "https://github.com/Avunu/mail-addons",
     "license": "AGPL-3",
     "installable": True,
     "depends": ["mail"],
