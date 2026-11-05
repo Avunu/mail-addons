@@ -169,7 +169,7 @@ class MockCloudflareCase:
 
     @classmethod
     def _cf_default_response(cls, record):
-        if record["url"] == cloudflare_api.VERIFY_URL:
+        if record["url"].endswith("/tokens/verify"):
             return (
                 200,
                 {

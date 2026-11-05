@@ -206,9 +206,10 @@ class IrMailServer(models.Model):
     def test_smtp_connection(self, autodetect_max_email_size=False):
         """Check the API token for Cloudflare servers, core's handshake for the rest.
 
-        There is no SMTP dialogue to simulate: ``GET /user/tokens/verify``
-        proves the token is active. The max email size is not detected but
-        known (Cloudflare's 5 MiB limit), so "Detect Max Limit" sets it.
+        There is no SMTP dialogue to simulate: the token check (see
+        ``cloudflare_api.verify_token``) proves the token is active. The max
+        email size is not detected but known (Cloudflare's 5 MiB limit), so
+        "Detect Max Limit" sets it.
         """
         cloudflare_servers = self.filtered(
             lambda server: server.smtp_authentication == "cloudflare"
@@ -225,7 +226,10 @@ class IrMailServer(models.Model):
             )
         for server in cloudflare_servers:
             try:
-                cloudflare_api.verify_token(server.sudo().cloudflare_api_token)
+                cloudflare_api.verify_token(
+                    server.sudo().cloudflare_api_token,
+                    account_id=server.cloudflare_account_id,
+                )
             except CloudflareEmailError as exc:
                 raise UserError(
                     self.env._(

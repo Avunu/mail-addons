@@ -21,9 +21,10 @@ from odoo.addons.base.models.ir_mail_server import (
 )
 from odoo.addons.mail_cloudflare import cloudflare_api
 from odoo.addons.mail_cloudflare.cloudflare_api import (
+    ACCOUNT_VERIFY_URL,
     MAX_EMAIL_SIZE_MB,
     SEND_URL,
-    VERIFY_URL,
+    USER_VERIFY_URL,
     CloudflareSendingSession,
 )
 from odoo.addons.mail_cloudflare.tests.common import CloudflareCommon
@@ -408,20 +409,41 @@ class TestIrMailServer(CloudflareCommon):
         self.assertEqual(len(self.cf_requests), 1)
         request = self.cf_requests[0]
         self.assertEqual(request["method"], "GET")
-        self.assertEqual(request["url"], VERIFY_URL)
+        self.assertEqual(
+            request["url"], ACCOUNT_VERIFY_URL.format(account_id=self.CF_ACCOUNT_ID)
+        )
         self.assertEqual(
             request["headers"]["Authorization"], f"Bearer {self.CF_API_TOKEN}"
         )
         # a plain test does not touch the size
         self.assertFalse(server.max_email_size)
 
-    def test_smtp_connection_bad_token(self):
+    def test_smtp_connection_personal_token(self):
+        # a personal token: the account endpoint refuses it, the user endpoint passes it
+        server = self.mail_server_cloudflare
         responses = [self._cf_error(401, 1000, "Invalid API Token")]
+        with self.mock_cloudflare(responses):
+            result = server.test_smtp_connection()
+        self.assertEqual(result["params"]["message"], "Connection Test Successful!")
+        self.assertEqual(
+            [request["url"] for request in self.cf_requests],
+            [
+                ACCOUNT_VERIFY_URL.format(account_id=self.CF_ACCOUNT_ID),
+                USER_VERIFY_URL,
+            ],
+        )
+
+    def test_smtp_connection_bad_token(self):
+        responses = [
+            self._cf_error(401, 1000, "Invalid API Token"),
+            self._cf_error(401, 1000, "Invalid API Token"),
+        ]
         with (
             self.mock_cloudflare(responses),
             self.assertRaisesRegex(UserError, "Invalid API Token"),
         ):
             self.mail_server_cloudflare.test_smtp_connection()
+        self.assertEqual(len(self.cf_requests), 2)
 
     def test_smtp_connection_inactive_token(self):
         body = {"success": True, "errors": [], "result": {"status": "expired"}}
@@ -448,7 +470,10 @@ class TestIrMailServer(CloudflareCommon):
         # through the token check
         self.assertEqual(self.connect_mocked.call_count, 1)
         self.assertEqual(len(self.cf_requests), 1)
-        self.assertEqual(self.cf_requests[0]["url"], VERIFY_URL)
+        self.assertEqual(
+            self.cf_requests[0]["url"],
+            ACCOUNT_VERIFY_URL.format(account_id=self.CF_ACCOUNT_ID),
+        )
 
     @mute_logger("odoo.addons.base.models.ir_mail_server")
     def test_smtp_connection_mixed_smtp_failure(self):

@@ -17,11 +17,12 @@ from odoo.tests.common import tagged
 
 from odoo.addons.mail_cloudflare import cloudflare_api
 from odoo.addons.mail_cloudflare.cloudflare_api import (
+    ACCOUNT_VERIFY_URL,
     MAX_HEADER_VALUE_BYTES,
     MAX_RECIPIENTS,
     REQUEST_TIMEOUT,
     SEND_URL,
-    VERIFY_URL,
+    USER_VERIFY_URL,
     CloudflareEmailError,
     CloudflareSendingSession,
     build_payload,
@@ -616,8 +617,53 @@ class TestCloudflareApi(CloudflareCommon):
         self.assertEqual(result["status"], "active")
         self.assertEqual(len(self.cf_requests), 1)
         request = self.cf_requests[0]
-        self.assertEqual((request["method"], request["url"]), ("GET", VERIFY_URL))
+        self.assertEqual((request["method"], request["url"]), ("GET", USER_VERIFY_URL))
         self.assertEqual(request["headers"]["Authorization"], "Bearer secret-token")
+
+    def test_verify_token_account_active(self):
+        # an account-owned token is answered by the account endpoint: one request
+        with self.mock_cloudflare():
+            result = verify_token("account-token", account_id=self.CF_ACCOUNT_ID)
+        self.assertEqual(result["status"], "active")
+        self.assertEqual(len(self.cf_requests), 1)
+        request = self.cf_requests[0]
+        self.assertEqual(
+            (request["method"], request["url"]),
+            ("GET", ACCOUNT_VERIFY_URL.format(account_id=self.CF_ACCOUNT_ID)),
+        )
+        self.assertEqual(request["headers"]["Authorization"], "Bearer account-token")
+
+    def test_verify_token_personal_falls_back_to_user_endpoint(self):
+        # the account endpoint refuses a personal token; the user endpoint accepts it
+        responses = [self._cf_error(401, 1000, "Invalid API Token")]
+        with self.mock_cloudflare(responses):
+            result = verify_token("personal-token", account_id=self.CF_ACCOUNT_ID)
+        self.assertEqual(result["status"], "active")
+        self.assertEqual(
+            [request["url"] for request in self.cf_requests],
+            [
+                ACCOUNT_VERIFY_URL.format(account_id=self.CF_ACCOUNT_ID),
+                USER_VERIFY_URL,
+            ],
+        )
+        self.assertEqual(
+            self.cf_requests[1]["headers"]["Authorization"], "Bearer personal-token"
+        )
+
+    def test_verify_token_personal_inactive_reported_from_user_endpoint(self):
+        # after the fallback, the personal token's own status is what gets reported
+        responses = [
+            self._cf_error(401, 1000, "Invalid API Token"),
+            (200, {"success": True, "errors": [], "result": {"status": "expired"}}),
+        ]
+        with (
+            self.mock_cloudflare(responses),
+            self.assertRaises(CloudflareEmailError) as raised,
+        ):
+            verify_token("old-personal", account_id=self.CF_ACCOUNT_ID)
+        self.assertFalse(raised.exception.fatal)
+        self.assertIn("expired", str(raised.exception))
+        self.assertEqual(len(self.cf_requests), 2)
 
     def test_verify_token_rejected(self):
         responses = [self._cf_error(401, 1000, "Invalid API Token")]
@@ -628,6 +674,34 @@ class TestCloudflareApi(CloudflareCommon):
             verify_token("bad-token")
         self.assertTrue(raised.exception.fatal)
         self.assertEqual(raised.exception.code, 1000)
+        self.assertEqual(len(self.cf_requests), 1)
+
+    def test_verify_token_rejected_by_both_endpoints(self):
+        # the account endpoint's refusal is the one reported
+        responses = [
+            self._cf_error(401, 1000, "Invalid API Token"),
+            self._cf_error(401, 1000, "Invalid API Token"),
+        ]
+        with (
+            self.mock_cloudflare(responses),
+            self.assertRaises(CloudflareEmailError) as raised,
+        ):
+            verify_token("bad-token", account_id=self.CF_ACCOUNT_ID)
+        self.assertTrue(raised.exception.fatal)
+        self.assertIn("Invalid API Token", str(raised.exception))
+        self.assertEqual(len(self.cf_requests), 2)
+
+    def test_verify_token_account_inactive_is_final(self):
+        # an answer that the account token is expired is not a refusal: no fallback
+        body = {"success": True, "errors": [], "result": {"status": "expired"}}
+        with (
+            self.mock_cloudflare([(200, body)]),
+            self.assertRaises(CloudflareEmailError) as raised,
+        ):
+            verify_token("old-token", account_id=self.CF_ACCOUNT_ID)
+        self.assertFalse(raised.exception.fatal)
+        self.assertIn("expired", str(raised.exception))
+        self.assertEqual(len(self.cf_requests), 1)
 
     def test_verify_token_inactive(self):
         body = {"success": True, "errors": [], "result": {"status": "expired"}}
@@ -645,6 +719,14 @@ class TestCloudflareApi(CloudflareCommon):
             self.assertRaises(CloudflareEmailError),
         ):
             verify_token("token")
+
+    def test_verify_token_account_unreachable_is_final(self):
+        with (
+            self.mock_cloudflare([requests.ConnectionError("dns")]),
+            self.assertRaises(CloudflareEmailError),
+        ):
+            verify_token("token", account_id=self.CF_ACCOUNT_ID)
+        self.assertEqual(len(self.cf_requests), 1)
 
     # -- harness ---------------------------------------------------------------
 

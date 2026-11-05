@@ -40,7 +40,9 @@ IMAP/POP server exists too.
 
 - **Email Sending** (Workers Paid plan): *Compute → Email Service → Email Sending → Onboard Domain*
   for every domain you send from (Cloudflare adds the bounce MX/SPF/DKIM/DMARC records). Create
-  an account-owned API token with the **Email Sending: Edit** permission and note the account id.
+  an account-owned API token (*Manage Account → Account API Tokens*) with the **Email Sending:
+  Edit** permission and note the account id. A personal API token (*My Profile → API Tokens*)
+  with the same permission also works.
 - **Email Routing** (free): enable it on the zone, then route the addresses Odoo should receive
   (or the catch-all) to the deployed Worker with *Send to a Worker*. See the Worker README for the
   deployment itself.
