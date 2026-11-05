@@ -47,10 +47,10 @@
                     <group>
                         <div colspan="2" class="text-muted">
                             <p>
-                                Create the token in the Cloudflare dashboard
-                                (My Profile → API Tokens) with the
-                                <b>Email Sending: Edit</b> permission on this
-                                account, and set the <b>FROM Filtering</b>
+                                Create an account-owned token in the Cloudflare
+                                dashboard (Manage Account → Account API Tokens)
+                                with the <b>Email Sending: Edit</b> permission
+                                on this account, and set the <b>FROM Filtering</b>
                                 above to a domain onboarded for Email Sending:
                                 Cloudflare only sends from onboarded domains.
                             </p>
