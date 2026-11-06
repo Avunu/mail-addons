@@ -60,6 +60,9 @@
               odooSeries = lib.fileContents ./.odoo-series;
               addons.enable = true;
               coreSource = inputs.ocb;
+              # mail_cloudflare's tests exercise the transport this guard replaces. This
+              # repo has no production data, and egress still stops the real REST call.
+              devguard.mail.enable = false;
               externalSources = [
                 {
                   name = "social";
