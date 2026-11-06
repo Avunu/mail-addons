@@ -12,34 +12,52 @@
         <field name="arch" type="xml">
             <!-- Nothing to fetch: the Worker pushes. -->
             <button name="fetch_mail" position="attributes">
-                <attribute name="invisible">state != 'done' or server_type == 'cloudflare'</attribute>
+                <attribute
+                    name="invisible"
+                >state != 'done' or server_type == 'cloudflare'</attribute>
             </button>
             <!-- No host, port or login: hide the IMAP/POP groups and stop
                  requiring their fields, the way core does for 'local'. The
                  groups have no name and 'string' is not allowed as a selector,
                  so they are reached through the fields they hold. -->
             <xpath expr="//field[@name='server']/parent::group" position="attributes">
-                <attribute name="invisible">server_type in ('local', 'cloudflare')</attribute>
+                <attribute
+                    name="invisible"
+                >server_type in ('local', 'cloudflare')</attribute>
             </xpath>
             <xpath expr="//field[@name='user']/parent::group" position="attributes">
-                <attribute name="invisible">server_type in ('local', 'cloudflare')</attribute>
+                <attribute
+                    name="invisible"
+                >server_type in ('local', 'cloudflare')</attribute>
             </xpath>
             <field name="server" position="attributes">
-                <attribute name="required">server_type not in ('local', 'cloudflare')</attribute>
+                <attribute
+                    name="required"
+                >server_type not in ('local', 'cloudflare')</attribute>
             </field>
             <field name="user" position="attributes">
-                <attribute name="required">server_type not in ('local', 'cloudflare')</attribute>
+                <attribute
+                    name="required"
+                >server_type not in ('local', 'cloudflare')</attribute>
             </field>
             <!-- The Worker contract (filled by onchange_server_type) reuses
                  core's Configuration group; the mailgate script stays local
                  only. -->
-            <xpath expr="//field[@name='configuration']/parent::group" position="attributes">
-                <attribute name="invisible">server_type not in ('local', 'cloudflare')</attribute>
+            <xpath
+                expr="//field[@name='configuration']/parent::group"
+                position="attributes"
+            >
+                <attribute
+                    name="invisible"
+                >server_type not in ('local', 'cloudflare')</attribute>
             </xpath>
             <field name="script" position="attributes">
                 <attribute name="invisible">server_type != 'local'</attribute>
             </field>
-            <xpath expr="//field[@name='configuration']/parent::group" position="before">
+            <xpath
+                expr="//field[@name='configuration']/parent::group"
+                position="before"
+            >
                 <group
                     name="cloudflare"
                     string="Cloudflare Email Worker"

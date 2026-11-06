@@ -46,9 +46,7 @@ class SmsSms(models.Model):
             return res
         # Only successfully-submitted messages (pending == "Sent",
         # sent == "Delivered"); errors keep their own pipeline.
-        for sms in self.filtered(
-            lambda s: s.state in ("pending", "sent") and s.number
-        ):
+        for sms in self.filtered(lambda s: s.state in ("pending", "sent") and s.number):
             try:
                 self._mirror_sms_to_gateway(sms)
             except Exception as exc:  # never break the core SMS send

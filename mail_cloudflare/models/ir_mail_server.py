@@ -22,8 +22,8 @@ from odoo import api, fields, models, modules
 from odoo.exceptions import UserError, ValidationError
 from odoo.tools import human_size
 
-from odoo.addons.mail_cloudflare import cloudflare_api
-from odoo.addons.mail_cloudflare.cloudflare_api import (
+from .. import cloudflare_api
+from ..cloudflare_api import (
     MAX_EMAIL_SIZE_MB,
     CloudflareEmailError,
     CloudflareSendingSession,
@@ -62,7 +62,7 @@ class IrMailServer(models.Model):
             "the account: Cloudflare only sends from onboarded domains and "
             "returns per-recipient results synchronously."
         )
-        super(
+        return super(
             IrMailServer, self - cloudflare_servers
         )._compute_smtp_authentication_info()
 

@@ -2,7 +2,6 @@
   description = "mail-addons: Avunu's Odoo addons, developed with odoo-nix (addons mode)";
 
   inputs = {
-    odoo-nix.url = "github:Avunu/odoo-nix/release-2";
     # flake-parts resolves perSystem `pkgs` from an input literally named `nixpkgs`.
     nixpkgs.follows = "odoo-nix/nixpkgs";
 
@@ -18,6 +17,13 @@
       url = "github:OCA/social/18.0";
       flake = false;
     };
+    # >>> odoo-nix: inputs (managed) >>>
+    odoo-nix.url = "github:Avunu/odoo-nix/release-2";
+    standards-profile = {
+      url = "github:Avunu/odoo-standards-profile/v1";
+      flake = false;
+    };
+    # <<< odoo-nix: inputs (managed) <<<
   };
 
   nixConfig = {
@@ -54,6 +60,9 @@
               odooSeries = lib.fileContents ./.odoo-series;
               addons.enable = true;
               coreSource = inputs.ocb;
+              # mail_cloudflare's tests exercise the transport this guard replaces. This
+              # repo has no production data, and egress still stops the real REST call.
+              devguard.mail.enable = false;
               externalSources = [
                 {
                   name = "social";

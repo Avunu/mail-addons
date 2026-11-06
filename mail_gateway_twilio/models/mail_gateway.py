@@ -17,7 +17,6 @@ class MailGateway(models.Model):
     #     requests; it is the only secret exposed to the controller via
     #     ``_get_gateway_data``).
     twilio_from_number = fields.Char(
-        string="Twilio From Number",
         help="Sender phone number in E.164 format (e.g. +15551234567). "
         "Ignored when a Messaging Service SID is set.",
     )

@@ -17,7 +17,9 @@ dependencies = [
     # >>> odoo-nix: install set (managed from modules.txt) >>>
     "odoo",
     "packaging",
-    "odoo-addon-mail_gateway",
+    "odoo-addon-mail_cloudflare",
+    "odoo-addon-mail_gateway_twilio",
+    "odoo-addon-mail_gateway_twilio_sms_mirror",
     # <<< odoo-nix: install set <<<
 ]
 
@@ -26,7 +28,6 @@ dependencies = [
 # relock leaves this block alone.
 dev = [
     "debugpy",
-    "ruff",
     # Odoo's --dev=reload watcher needs a filesystem watcher it does not declare.
     "watchdog",
     # Odoo's test runner imports freezegun, and browser tours need
@@ -49,10 +50,13 @@ constraint-dependencies = ["setuptools<81"]
     "odoo-addon-fetchmail_thread_default" = { path = "../.odoo-nix/modules/social/fetchmail_thread_default" }
     "odoo-addon-mail_activity_cancel_tracking" = { path = "../.odoo-nix/modules/social/mail_activity_cancel_tracking" }
     "odoo-addon-mail_activity_unlink_log" = { path = "../.odoo-nix/modules/social/mail_activity_unlink_log" }
+    "odoo-addon-mail_cloudflare" = { path = "../mail_cloudflare", editable = true }
     "odoo-addon-mail_gateway" = { path = "../.odoo-nix/modules/social/mail_gateway" }
     "odoo-addon-mail_gateway_instagram" = { path = "../.odoo-nix/modules/social/mail_gateway_instagram" }
     "odoo-addon-mail_gateway_telegram" = { path = "../.odoo-nix/modules/social/mail_gateway_telegram" }
     "odoo-addon-mail_gateway_telegram_standalone" = { path = "../.odoo-nix/modules/social/mail_gateway_telegram_standalone" }
+    "odoo-addon-mail_gateway_twilio" = { path = "../mail_gateway_twilio", editable = true }
+    "odoo-addon-mail_gateway_twilio_sms_mirror" = { path = "../mail_gateway_twilio_sms_mirror", editable = true }
     "odoo-addon-mail_gateway_whatsapp" = { path = "../.odoo-nix/modules/social/mail_gateway_whatsapp" }
     "odoo-addon-mail_mention_suggestion_config" = { path = "../.odoo-nix/modules/social/mail_mention_suggestion_config" }
     "odoo-addon-mail_notification_with_history" = { path = "../.odoo-nix/modules/social/mail_notification_with_history" }
@@ -77,9 +81,15 @@ packages = []
 # >>> odoo-nix: sdist build deps (managed) >>>
 "docopt" = ["setuptools"]
 "odoo" = ["setuptools"]
-"odoo-addon-mail-gateway" = ["setuptools"]
 "ofxparse" = ["setuptools"]
 "python-ldap" = ["setuptools"]
 "rjsmin" = ["setuptools"]
 "vobject" = ["setuptools"]
 # <<< odoo-nix: sdist build deps (managed) <<<
+
+[tool.odoo-nix]
+schema = 1
+profile = "github:Avunu/odoo-standards-profile/v1"
+
+[tool.odoo-nix.icons]
+src-icon = "assets/icons/mail-addons.png"
