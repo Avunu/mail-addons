@@ -47,7 +47,9 @@ LOOPBACK_HOSTS = ("localhost", "127.0.0.1", "::1")
 _HEADER_NAME_RE = re.compile(rb"^([\x21-\x39\x3b-\x7e]+):", re.MULTILINE)
 _HEADER_BLOCK_END_RE = re.compile(rb"\r?\n\r?\n")
 _ENVELOPE_FORBIDDEN_RE = re.compile(r"[\x00-\x1f\x7f]")
-_DELIVERED_TO_RE = re.compile(rb"^delivered-to:[ \t]*(.*)$", re.MULTILINE | re.IGNORECASE)
+_DELIVERED_TO_RE = re.compile(
+    rb"^delivered-to:[ \t]*(.*)$", re.MULTILINE | re.IGNORECASE
+)
 
 
 def _existing_header_names(body):
@@ -134,7 +136,9 @@ class FetchmailServer(models.Model):
             "secret below, then route the alias domain's addresses to it "
             "(Cloudflare > Email Routing > Send to a Worker)."
         )
-        super(FetchmailServer, self - cloudflare_servers)._compute_server_type_info()
+        return super(
+            FetchmailServer, self - cloudflare_servers
+        )._compute_server_type_info()
 
     @api.onchange("server_type", "is_ssl", "object_id")
     def onchange_server_type(self):
@@ -309,8 +313,10 @@ Responses (JSON):
         again with ours on every write."""
         if self.env.context.get("fetchmail_cron_running"):
             return
-        try:
-            cron = self.env.ref("mail.ir_cron_mail_gateway_action")
+        cron = self.env.ref(
+            "mail.ir_cron_mail_gateway_action", raise_if_not_found=False
+        )
+        if cron:
             cron.toggle(
                 model=self._name,
                 domain=[
@@ -318,8 +324,6 @@ Responses (JSON):
                     ("server_type", "not in", ("local", "cloudflare")),
                 ],
             )
-        except ValueError:
-            pass
 
     # -- inbound -------------------------------------------------------------
 

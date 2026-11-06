@@ -191,9 +191,7 @@ class TestMailGatewayTwilio(MailGatewayTestCase):
         post_mock.assert_called_once()
         # From number is used as the sender.
         self.assertEqual(post_mock.call_args.kwargs["data"]["From"], "+15550000000")
-        self.assertEqual(
-            post_mock.call_args.kwargs["data"]["To"], self.customer_number
-        )
+        self.assertEqual(post_mock.call_args.kwargs["data"]["To"], self.customer_number)
         notification = channel.message_ids.notification_ids.filtered(
             lambda n: n.notification_type == "gateway"
         )
@@ -266,9 +264,7 @@ class TestMailGatewayTwilio(MailGatewayTestCase):
         response = MagicMock()
         response.json.return_value = {"sid": "SMaction"}
         with patch("requests.post", return_value=response) as post_mock:
-            action.with_context(
-                active_ids=[partner.id], active_id=partner.id
-            ).run()
+            action.with_context(active_ids=[partner.id], active_id=partner.id).run()
         post_mock.assert_called()
         channel = partner._twilio_get_channel("mobile", self.gateway)
         self.assertIn("Hello Auto", channel.message_ids.body)

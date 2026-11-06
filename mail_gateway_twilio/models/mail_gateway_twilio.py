@@ -41,9 +41,7 @@ class MailGatewayTwilioService(models.AbstractModel):
         base_url = (
             self.env["ir.config_parameter"].sudo().get_param("web.base.url") or ""
         ).rstrip("/")
-        return "{}/gateway/{}/{}/update".format(
-            base_url, gateway.gateway_type, gateway.webhook_key
-        )
+        return f"{base_url}/gateway/{gateway.gateway_type}/{gateway.webhook_key}/update"
 
     def _twilio_auth(self, gateway):
         return (gateway.token, gateway.webhook_secret)
@@ -103,9 +101,7 @@ class MailGatewayTwilioService(models.AbstractModel):
         proxies = self._get_proxies()
         if gateway.twilio_messaging_service_sid:
             response = requests.post(
-                "{}/Services/{}".format(
-                    TWILIO_MESSAGING_BASE, gateway.twilio_messaging_service_sid
-                ),
+                f"{TWILIO_MESSAGING_BASE}/Services/{gateway.twilio_messaging_service_sid}",
                 data={"InboundRequestUrl": webhook_url, "InboundMethod": "POST"},
                 auth=auth,
                 timeout=10,
@@ -114,9 +110,7 @@ class MailGatewayTwilioService(models.AbstractModel):
             response.raise_for_status()
         elif gateway.twilio_from_number:
             lookup = requests.get(
-                "{}/Accounts/{}/IncomingPhoneNumbers.json".format(
-                    TWILIO_API_BASE, gateway.token
-                ),
+                f"{TWILIO_API_BASE}/Accounts/{gateway.token}/IncomingPhoneNumbers.json",
                 params={"PhoneNumber": gateway.twilio_from_number},
                 auth=auth,
                 timeout=10,
@@ -188,9 +182,9 @@ class MailGatewayTwilioService(models.AbstractModel):
             extension = mimetypes.guess_extension(content_type) or ""
             message_sid = update.get("MessageSid") or "media"
             filename = (
-                "{}{}".format(message_sid, extension)
+                f"{message_sid}{extension}"
                 if num_media == 1
-                else "{}-{}{}".format(message_sid, index, extension)
+                else f"{message_sid}-{index}{extension}"
             )
             attachments.append((filename, media_request.content, attachment_info))
         if not body and not attachments:
@@ -232,7 +226,7 @@ class MailGatewayTwilioService(models.AbstractModel):
             error_code = update.get("ErrorCode")
             error_message = update.get("ErrorMessage") or ""
             reason = (
-                "[{}] {}".format(error_code, error_message)
+                f"[{error_code}] {error_message}"
                 if error_code
                 else (error_message or status)
             )
@@ -245,9 +239,7 @@ class MailGatewayTwilioService(models.AbstractModel):
             )
             notification.mail_message_id._notify_message_notification_update()
         elif status == "delivered":
-            notification.write(
-                {"notification_status": "sent", "failure_reason": False}
-            )
+            notification.write({"notification_status": "sent", "failure_reason": False})
 
     # ------------------------------------------------------------------
     # Author / channel resolution
@@ -329,7 +321,7 @@ class MailGatewayTwilioService(models.AbstractModel):
             else:
                 data["From"] = gateway.twilio_from_number
             response = requests.post(
-                "{}/Accounts/{}/Messages.json".format(TWILIO_API_BASE, gateway.token),
+                f"{TWILIO_API_BASE}/Accounts/{gateway.token}/Messages.json",
                 data=data,
                 auth=self._twilio_auth(gateway),
                 timeout=10,
