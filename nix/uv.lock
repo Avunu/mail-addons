@@ -1706,7 +1706,7 @@ provides-extras = ["ldap"]
 
 [[package]]
 name = "odoo-addon-mail-cloudflare"
-version = "18.0.1.2.0.6"
+version = "18.0.1.2.0.7"
 source = { editable = "../mail_cloudflare" }
 dependencies = [
     { name = "odoo" },
@@ -1728,7 +1728,7 @@ wheels = [
 
 [[package]]
 name = "odoo-addon-mail-gateway-twilio"
-version = "18.0.1.0.0.3"
+version = "18.0.1.0.0.4"
 source = { editable = "../mail_gateway_twilio" }
 dependencies = [
     { name = "odoo" },
@@ -1743,7 +1743,7 @@ requires-dist = [
 
 [[package]]
 name = "odoo-addon-mail-gateway-twilio-sms-mirror"
-version = "18.0.1.0.0.3"
+version = "18.0.1.0.0.4"
 source = { editable = "../mail_gateway_twilio_sms_mirror" }
 dependencies = [
     { name = "odoo" },
