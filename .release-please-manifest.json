@@ -1,0 +1,5 @@
+{
+  "mail_cloudflare": "1.2.0",
+  "mail_gateway_twilio": "1.0.0",
+  "mail_gateway_twilio_sms_mirror": "1.0.0"
+}
