@@ -66,6 +66,15 @@ constraint-dependencies = ["setuptools<81"]
     "odoo-addon-res_company_mastodon_link" = { path = "../.odoo-nix/modules/social/res_company_mastodon_link" }
     "odoo-addon-res_partner_linkedin_link" = { path = "../.odoo-nix/modules/social/res_partner_linkedin_link" }
     "odoo-addon-res_partner_mastodon_link" = { path = "../.odoo-nix/modules/social/res_partner_mastodon_link" }
+    "odoo-addon-social_media_advertising" = { path = "../.odoo-nix/modules/social/social_media_advertising" }
+    "odoo-addon-social_media_advertising_linkedin" = { path = "../.odoo-nix/modules/social/social_media_advertising_linkedin" }
+    "odoo-addon-social_media_base" = { path = "../.odoo-nix/modules/social/social_media_base" }
+    "odoo-addon-social_media_calendar" = { path = "../.odoo-nix/modules/social/social_media_calendar" }
+    "odoo-addon-social_media_linkedin" = { path = "../.odoo-nix/modules/social/social_media_linkedin" }
+    "odoo-addon-social_media_linkedin_sync" = { path = "../.odoo-nix/modules/social/social_media_linkedin_sync" }
+    "odoo-addon-social_media_sync" = { path = "../.odoo-nix/modules/social/social_media_sync" }
+    "odoo-addon-social_media_x" = { path = "../.odoo-nix/modules/social/social_media_x" }
+    "odoo-addon-social_media_x_sync" = { path = "../.odoo-nix/modules/social/social_media_x_sync" }
 # <<< odoo-nix: module sources <<<
 
 [build-system]
